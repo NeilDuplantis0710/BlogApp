@@ -4,20 +4,22 @@ import { apiResponse } from "../utils/ApiResponse.js"
 import { refine, toUpperCase } from "zod"
 import { response } from "express"
 import { User } from "../models/user.models.js"
-import { uploadOnCloudinary } from "../utils/Cloudinary.js"
 
 
 
 // User Sign - Up
 const userSignUp = asyncHandler(async (req, res) => {
-    const { username, email, fullName, about, avatar: avatarBody } = req.body
+    const body = req.body ?? {}
+    const { username, email, fullName, about } = body
 
     console.log("User-Name: ", username)
     console.log("Email: ", email)
     console.log("Full-Name: ", fullName)
     console.log("About: ", about)
-    console.log("Avatar: ", avatarBody)
 
+    if (!req.body || Object.keys(req.body).length === 0) {
+        throw new ApiError(400, "Request body is required!!")
+    }
     if (!username || username == "") {
         throw new ApiError(400, "Username is required!!")
     }
@@ -30,9 +32,6 @@ const userSignUp = asyncHandler(async (req, res) => {
     if (!about || about == "") {
         throw new ApiError(400, "About is required!!")
     }
-    if (!avatarBody || avatarBody == "") {
-        throw new ApiError(400, "Avatar is required!!")
-    }
 
     const alreadyExist = await User.findOne({
         $or: [{username: username}, {email: email}]
@@ -41,25 +40,11 @@ const userSignUp = asyncHandler(async (req, res) => {
     if(alreadyExist){
         throw new ApiError(409, "User already exist!!")
     }
-
-    const avatarLocalPath = req.files?.avatar[0]?.path
-
-    if(!avatarLocalPath) {
-        throw new ApiError(400, "Avatar is required!!")
-    }
-
-    const avatar = await uploadOnCloudinary(avatarLocalPath)
-
-    if(!avatar){
-        throw new ApiError(500, "Avatar is not uploaded successfully!!")
-    }
-
     const user = await User.create({
         username: username.toUpperCase().trim(),
         email: email.trim(),
         fullName: fullName.trim(),
-        about: about.toUpperCase(),
-        avatar: (avatar && avatar.url) || avatarBody || ""
+        about: about.toUpperCase()
     })
 
     const createdUser = await User.findById(user._id)
