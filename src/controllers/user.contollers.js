@@ -9,14 +9,14 @@ import { uploadOnCloudinary } from "../utils/Cloudinary.js"
 
 
 // User Sign - Up
-const userSignUp = asyncHandler((req, res) => {
-    const { username, email, fullName, about, avatar } = req.body
+const userSignUp = asyncHandler(async (req, res) => {
+    const { username, email, fullName, about, avatar: avatarBody } = req.body
 
     console.log("User-Name: ", username)
     console.log("Email: ", email)
     console.log("Full-Name: ", fullName)
     console.log("About: ", about)
-    console.log("Avatar: ", avatar)
+    console.log("Avatar: ", avatarBody)
 
     if (!username || username == "") {
         throw new ApiError(400, "Username is required!!")
@@ -30,7 +30,7 @@ const userSignUp = asyncHandler((req, res) => {
     if (!about || about == "") {
         throw new ApiError(400, "About is required!!")
     }
-    if (!avatar || avatar == "") {
+    if (!avatarBody || avatarBody == "") {
         throw new ApiError(400, "Avatar is required!!")
     }
 
@@ -59,10 +59,10 @@ const userSignUp = asyncHandler((req, res) => {
         email: email.trim(),
         fullName: fullName.trim(),
         about: about.toUpperCase(),
-        avatar: avatar.url || ""
+        avatar: (avatar && avatar.url) || avatarBody || ""
     })
 
-    const createdUser = await User.findbyId(user._id)
+    const createdUser = await User.findById(user._id)
 
     if(!createdUser){
         throw new ApiError(500, "Something went wrong while creating the user!!")
