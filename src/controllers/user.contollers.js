@@ -53,6 +53,13 @@ const userSignUp = asyncHandler(async (req, res) => {
         throw new ApiError(500, "Something went wrong while creating the user!!")
     }
 
-    return res.status(201).json(new apiResponse(201, "User created successfully!!", createdUser))
+    return res.status(201).json(new apiResponse(201,"User created successfully!!", createdUser))
 })
-export {userSignUp}
+
+// Get all users
+
+const getAllUsers = asyncHandler(async (req,res) => {
+    const users = await User.find({})
+    return res.status(200).json(new apiResponse(201, users, "Users fetched successfully!!"))
+})
+export {userSignUp, getAllUsers}
