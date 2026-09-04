@@ -4,6 +4,7 @@ import { apiResponse } from "../utils/ApiResponse.js"
 import { refine, toUpperCase } from "zod"
 import { response } from "express"
 import { User } from "../models/user.models.js"
+import { uploadOnCloudinary } from "../utils/Cloudinary.js"
 
 
 
@@ -27,11 +28,46 @@ const userSignUp = asyncHandler((req, res) => {
         throw new ApiError(400, "Full Name is required!!")
     }
     if (!about || about == "") {
-        throw new ApiError(400, "Username is required!!")
+        throw new ApiError(400, "About is required!!")
     }
     if (!avatar || avatar == "") {
         throw new ApiError(400, "Avatar is required!!")
     }
 
+    const alreadyExist = await User.findOne({
+        $or: [{username: username}, {email: email}]
+    })
+
+    if(alreadyExist){
+        throw new ApiError(409, "User already exist!!")
+    }
+
+    const avatarLocalPath = req.files?.avatar[0]?.path
+
+    if(!avatarLocalPath) {
+        throw new ApiError(400, "Avatar is required!!")
+    }
+
+    const avatar = await uploadOnCloudinary(avatarLocalPath)
+
+    if(!avatar){
+        throw new ApiError(500, "Avatar is not uploaded successfully!!")
+    }
+
+    const user = await User.create({
+        username: username.toUpperCase().trim(),
+        email: email.trim(),
+        fullName: fullName.trim(),
+        about: about.toUpperCase(),
+        avatar: avatar.url || ""
+    })
+
+    const createdUser = await User.findbyId(user._id)
+
+    if(!createdUser){
+        throw new ApiError(500, "Something went wrong while creating the user!!")
+    }
+
+    return res.status(201).json(new apiResponse(201, "User created successfully!!", createdUser))
 })
-export { }
+export {userSignUp}
