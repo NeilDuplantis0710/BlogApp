@@ -8,8 +8,9 @@ router.route("/register").post(
     upload.fields([
         {
             name: "avatar",
-            maxCout: 1
+            maxCount: 1
         }
-    ])(userSignUp)
+    ]),
+    userSignUp
 )
 export default router
