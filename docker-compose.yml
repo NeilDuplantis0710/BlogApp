@@ -4,14 +4,16 @@ services:
     build: .
     container_name: Blog_App_Container
     ports:
-     - "8000:8000"
+      - "8000:8000"
     env_file:
       - .env
     environment:
-      - REDIS_URL=redis://redis:6379
+      PORT: 8000
+      REDIS_URL: redis://redis:6379
     depends_on:
-      - redis
-    
+      redis:
+        condition: service_healthy
+
   redis:
     image: redis:7-alpine
     container_name: Blog_Redis_Container
@@ -20,10 +22,11 @@ services:
     command: [ "redis-server", "--appendonly", "yes" ]
     volumes:
       - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
 volumes:
   redis-data:
-
-
-
-
