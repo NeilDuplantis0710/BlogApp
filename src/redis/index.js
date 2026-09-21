@@ -1,22 +1,58 @@
 import Redis from 'ioredis'
 
+let redisClient
+
 const connectRedis = async () => {
+    if (redisClient) return redisClient
+
     const redisUrl = process.env.REDIS_URL
 
-    if(!redisUrl){
-        throw new Error("REDIS_URL is not defined")
+    if (!redisUrl) {
+        throw new Error('REDIS_URL is not defined')
     }
 
-    const redis = new Redis(redisUrl, {
-        lazyConnect: true, // Create the Redis client, but do not connect yet, his line only prepares Redis. The actual connection happens later.
-        retryStrategy: () => null, // This means if Redis cannot connect, do not keep retrying forever, stop and report the error.
+    redisClient = new Redis(redisUrl, {
+        lazyConnect: true,
+        retryStrategy: () => null,
     })
 
-    await redis.connect()
-    await redis.ping()
+    redisClient.on('error', (error) => {
+        console.error('Redis error:', error)
+    })
 
-    console.log("Redis connected!!!")
-    return redis
+    try {
+        await redisClient.connect()
+        await redisClient.ping()
+        console.log('Redis connected!!!')
+        return redisClient
+    } catch (error) {
+        redisClient.disconnect()
+        redisClient = undefined
+        throw error
+    }
 }
 
-export { connectRedis }
+const getRedisClient = () => {
+    if (!redisClient) {
+        throw new Error('Redis client is not connected')
+    }
+
+    return redisClient
+}
+
+const closeRedis = async () => {
+    if (!redisClient) return
+
+    const client = redisClient
+    redisClient = undefined
+
+    try {
+        await client.quit()
+        console.log('Redis connection closed.')
+    } catch (error) {
+        client.disconnect()
+        console.error('Redis did not close gracefully:', error)
+    }
+}
+
+export { connectRedis, getRedisClient, closeRedis }
