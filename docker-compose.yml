@@ -1,7 +1,9 @@
 services:
 
   app:
-    build: .
+    build: 
+      context: .
+      target: development
     container_name: Blog_App_Container
     ports:
       - "8000:8000"
@@ -10,6 +12,10 @@ services:
     environment:
       PORT: 8000
       REDIS_URL: redis://redis:6379
+    command: npm run dev
+    volumes: 
+      - .:/app
+      - app-node-modules:/app/node_modules
     depends_on:
       redis:
         condition: service_healthy
@@ -29,4 +35,5 @@ services:
       retries: 5
 
 volumes:
+  app-node-modules:
   redis-data:
