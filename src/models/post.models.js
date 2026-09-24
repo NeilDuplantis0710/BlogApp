@@ -1,5 +1,4 @@
 import mongoose, {Schema} from "mongoose";
-import { lowercase, uppercase } from "zod";
 
 const postSchema = new Schema({
     postName:{
@@ -12,7 +11,7 @@ const postSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
-    postSubConnet:{
+    postSubContent:{
         type: String,
         required: false,
         lowercase: true
