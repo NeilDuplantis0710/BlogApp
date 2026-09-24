@@ -66,7 +66,8 @@ const getAllUsers = asyncHandler(async (req,res) => {
 
 // Blog Post
 const writePost = asyncHandler(async(req,res) => {
-    const { postName, postAuthor, postSubContent, postTag, postContent} = req.body()
+    const body = req.body ?? {}
+    const { postName, postAuthor, postSubContent, postTag, postContent} = body
 
     console.log("Post - Name: ", postName)
     console.log("Post - Author: ", postAuthor)
@@ -74,7 +75,7 @@ const writePost = asyncHandler(async(req,res) => {
     console.log("Post - Tag: ", postTag)
     console.log("Post - Content: ", postContent)
 
-    if(!req.body() || req.body() == ''){
+    if(Object.keys(body).length === 0){
         throw new ApiError(400, "Request Body not found!!")
     }
 
@@ -94,11 +95,17 @@ const writePost = asyncHandler(async(req,res) => {
         throw new ApiError(400, 'Post Content is required!!!')
     }
 
+    const author = await User.findOne({ fullName: postAuthor.trim() })
+
+    if(!author){
+        throw new ApiError(404, "Post author not found")
+    }
+
     const post = await Post.create({
-        postName: postName.trim().toLowercase(),
-        postAuthor: postAuthor.trim().toLowercase(),
-        postContent: postContent.toLowercase(),
-        postSubContent: postSubContent.toLowercase(),
+        postName: postName.trim().toLowerCase(),
+        postAuthor: author._id,
+        postContent: postContent.toLowerCase(),
+        postSubContent: postSubContent?.toLowerCase(),
         postTag: postTag.trim().toUpperCase(),
     }) 
 
