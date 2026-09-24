@@ -61,3 +61,6 @@ const getAllUsers = asyncHandler(async (req,res) => {
     return res.status(200).json(new apiResponse(201, users, "Users fetched successfully!!"))
 })
 export {userSignUp, getAllUsers}
+
+
+// Blog Post
