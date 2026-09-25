@@ -34,10 +34,10 @@ const userSignUp = asyncHandler(async (req, res) => {
     }
 
     const alreadyExist = await User.findOne({
-        $or: [{username: username}, {email: email}]
+        $or: [{ username: username }, { email: email }]
     })
 
-    if(alreadyExist){
+    if (alreadyExist) {
         throw new ApiError(409, "User already exist!!")
     }
     const user = await User.create({
@@ -49,25 +49,25 @@ const userSignUp = asyncHandler(async (req, res) => {
 
     const createdUser = await User.findById(user._id)
 
-    if(!createdUser){
+    if (!createdUser) {
         throw new ApiError(500, "Something went wrong while creating the user!!")
     }
 
-    return res.status(201).json(new apiResponse(201,"User created successfully!!", createdUser))
+    return res.status(201).json(new apiResponse(201, "User created successfully!!", createdUser))
 })
 
 // Get all users
 
-const getAllUsers = asyncHandler(async (req,res) => {
+const getAllUsers = asyncHandler(async (req, res) => {
     const users = await User.find({})
     return res.status(201).json(new apiResponse(201, users, "Users fetched successfully!!"))
 })
 
 
 // Blog Post
-const writePost = asyncHandler(async(req,res) => {
+const writePost = asyncHandler(async (req, res) => {
     const body = req.body ?? {}
-    const { postName, postAuthor, postSubContent, postTag, postContent} = body
+    const { postName, postAuthor, postSubContent, postTag, postContent } = body
 
     console.log("Post - Name: ", postName)
     console.log("Post - Author: ", postAuthor)
@@ -75,29 +75,29 @@ const writePost = asyncHandler(async(req,res) => {
     console.log("Post - Tag: ", postTag)
     console.log("Post - Content: ", postContent)
 
-    if(Object.keys(body).length === 0){
+    if (Object.keys(body).length === 0) {
         throw new ApiError(400, "Request Body not found!!")
     }
 
-    if(!postName || postName == ''){
+    if (!postName || postName == '') {
         throw new ApiError(400, "Post Name is required!!!")
     }
 
-    if(!postAuthor || postAuthor == ''){
+    if (!postAuthor || postAuthor == '') {
         throw new ApiError(400, "Post Author is required!!!!")
     }
 
-    if(!postTag || postTag == ''){
+    if (!postTag || postTag == '') {
         throw new ApiError(400, 'Post Tag is required!!!')
     }
 
-    if(!postContent || postContent == ''){
+    if (!postContent || postContent == '') {
         throw new ApiError(400, 'Post Content is required!!!')
     }
 
     const author = await User.findOne({ fullName: postAuthor.trim() })
 
-    if(!author){
+    if (!author) {
         throw new ApiError(404, "Post author not found")
     }
 
@@ -107,13 +107,15 @@ const writePost = asyncHandler(async(req,res) => {
         postContent: postContent.toLowerCase(),
         postSubContent: postSubContent?.toLowerCase(),
         postTag: postTag.trim().toUpperCase(),
-    }) 
+    })
 
     const createdPost = await Post.findById(post._id)
 
-    if(!createdPost){
+    if (!createdPost) {
         throw new ApiError(500, "The post can't be created!!!")
     }
+
+    await req.app.locals.redis.del("blogs:all")
 
     return res.status(201).json(new apiResponse(201, "Post created Successfully!!!", createdPost))
 })
@@ -121,17 +123,33 @@ const writePost = asyncHandler(async(req,res) => {
 
 // Get all blogs
 
-const getAllBlogs = asyncHandler(async (req,res) => {
+const getAllBlogs = asyncHandler(async (req, res) => {
+
+    const cacheKey = "blogs:all"
+    const redis = req.app.locals.redis
+    const cachedPosts = await redis.get(cacheKey)
+
+    if (cachedPosts) { // Checking if our cache is empty or if it has something, give the output.
+        return res.status(200).json(
+            new apiResponse(200, JSON.parse(cachedPosts), "The posts from cache are here!!")
+        )
+    }
+
     const posts = await Post.find({})
-    return res.status(201).json(new apiResponse(201, "All the posts are here!!!", posts))
+
+    await redis.set(cacheKey, JSON.stringify(posts), "EX", 3600) // Storing the posts in redis cache through set with an TTL "EX" of 3600, 1 hour.
+
+    return res.status(200).json( // If the redis cache is empty then gives the data from our database MongoDB
+        new apiResponse(200, posts, "All the posts are here!!!")
+    )
 })
 
 // Getting a particular post from the post ID.
 
-const getAblog = asyncHandler(async (req,res) => {
+const getAblog = asyncHandler(async (req, res) => {
     const particularPost = await Post.findById(req.params.id)
 
-    if(!particularPost){
+    if (!particularPost) {
         throw new ApiError(404, "The Post you search does not exist!")
     }
 
@@ -139,4 +157,4 @@ const getAblog = asyncHandler(async (req,res) => {
 
 })
 
-export {userSignUp, getAllUsers, writePost, getAllBlogs, getAblog}
+export { userSignUp, getAllUsers, writePost, getAllBlogs, getAblog }
