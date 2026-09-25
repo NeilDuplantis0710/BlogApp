@@ -123,7 +123,7 @@ const writePost = asyncHandler(async(req,res) => {
 
 const getAllBlogs = asyncHandler(async (req,res) => {
     const posts = await Post.find({})
-    return res.status(201).json(201, "All the posts are here!!!", posts)
+    return res.status(201).json(new apiResponse(201, "All the posts are here!!!", posts))
 })
 
 export {userSignUp, getAllUsers, writePost, getAllBlogs}
