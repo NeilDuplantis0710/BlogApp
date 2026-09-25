@@ -129,7 +129,7 @@ const getAllBlogs = asyncHandler(async (req,res) => {
 // Getting a particular post from the post ID.
 
 const getAblog = asyncHandler(async (req,res) => {
-    const particularPost = Post.findById(Post._id)
+    const particularPost = await Post.findById(req.params.id)
 
     if(!particularPost){
         throw new ApiError(404, "The Post you search does not exist!")
