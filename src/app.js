@@ -15,12 +15,13 @@ import signUp from './routes/user.routes.js'
 import getAllUsers from './routes/user.routes.js'
 import writePost from './routes/user.routes.js'
 import getAllBlogs  from './routes/user.routes.js'
+import getAblog  from './routes/user.routes.js'
 
 //routes declaration
 app.use("/api/v1/signUp", signUp)
 app.use("/api/v1/users", getAllUsers) 
 app.use("/api/v1/create", writePost)
-app.use("/api/v1/blogs", getAllBlogs)
+app.use("/api/v1/blogs", getAllBlogs, getAblog)
 
 
 //https://localhost:8000/api/v1/signup/register
