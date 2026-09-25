@@ -126,4 +126,17 @@ const getAllBlogs = asyncHandler(async (req,res) => {
     return res.status(201).json(new apiResponse(201, "All the posts are here!!!", posts))
 })
 
-export {userSignUp, getAllUsers, writePost, getAllBlogs}
+// Getting a particular post from the post ID.
+
+const getAblog = asyncHandler(async (req,res) => {
+    const particularPost = Post.findById(Post._id)
+
+    if(!particularPost){
+        throw new ApiError(404, "The Post you search does not exist!")
+    }
+
+    return res.status(201).json(new apiResponse(201, "The post you asked for is here!!!", particularPost))
+
+})
+
+export {userSignUp, getAllUsers, writePost, getAllBlogs, getAblog}
