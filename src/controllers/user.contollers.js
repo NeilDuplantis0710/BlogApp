@@ -4,6 +4,7 @@ import { apiResponse } from "../utils/ApiResponse.js"
 import { User } from "../models/user.models.js"
 import { Post } from "../models/post.models.js"
 import { application } from "express"
+import { id } from "zod/locales"
 
 
 
@@ -147,7 +148,17 @@ const getAllBlogs = asyncHandler(async (req, res) => {
 // Getting a particular post from the post ID.
 
 const getAblog = asyncHandler(async (req, res) => {
+
+    const cachedKeys = "post:id"
+    const redis = req.app.blogs.locals
+    const cachedPost = await redis.get(cachedKeys)
+
+    if(cachedPost){
+        res.send(200).json(new apiResponse(200, "The Post you searched for is here!!!", JSON.parse(cachedPost)))
+    }
     const particularPost = await Post.findById(req.params.id)
+
+    await redis.set(cachedKeys, JSON.stringify(particularPost), "EX", 3600)
 
     if (!particularPost) {
         throw new ApiError(404, "The Post you search does not exist!")
