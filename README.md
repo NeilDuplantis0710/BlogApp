@@ -125,4 +125,4 @@ Planned: password-based login, JWT cookie issuance and refresh, Redis session re
 
 ## Roadmap
 
-The API will remain runnable locally for development and testing. A dedicated frontend with a complete UI/UX is coming next, followed by a globally accessible deployment. The goal is to support both a local API for development and a hosted API for users anywhere.
+Campus Chronicle will have a dedicated frontend for people who want to use the application directly. The API will also remain available to run locally for developers and anyone who prefers a self-hosted setup, alongside a planned globally accessible deployment for the hosted frontend. This provides both a ready-to-use web experience and the option to run your own local API instance.
