@@ -1,5 +1,5 @@
 <p align="center">
-	<img src="public/campus-chronicle-banner.svg" alt="Campus Chronicle - stories from campus" width="100%" />
+	<img src="public/images/campus-chronicle-banner.svg" alt="Campus Chronicle - stories from campus" width="100%" />
 </p>
 
 # Campus Chronicle
