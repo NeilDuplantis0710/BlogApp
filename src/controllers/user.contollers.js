@@ -3,8 +3,6 @@ import { ApiError } from "../utils/ApiError.js"
 import { apiResponse } from "../utils/ApiResponse.js"
 import { User } from "../models/user.models.js"
 import { Post } from "../models/post.models.js"
-import { application } from "express"
-import { id } from "zod/locales"
 
 
 
