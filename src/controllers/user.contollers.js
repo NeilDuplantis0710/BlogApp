@@ -147,22 +147,25 @@ const getAllBlogs = asyncHandler(async (req, res) => {
 
 const getAblog = asyncHandler(async (req, res) => {
 
-    const cachedKeys = "post:id"
-    const redis = req.app.blogs.locals
-    const cachedPost = await redis.get(cachedKeys)
+    const cacheKey = `blog:${req.params.id}`
+    const redis = req.app.locals.redis
+    const cachedPost = await redis.get(cacheKey)
 
-    if(cachedPost){
-        res.send(200).json(new apiResponse(200, "The Post you searched for is here!!!", JSON.parse(cachedPost)))
+    if (cachedPost) {
+        return res.status(200).json(
+            new apiResponse(200, JSON.parse(cachedPost), "The Post you searched for is here!!!")
+        )
     }
-    const particularPost = await Post.findById(req.params.id)
 
-    await redis.set(cachedKeys, JSON.stringify(particularPost), "EX", 3600)
+    const particularPost = await Post.findById(req.params.id)
 
     if (!particularPost) {
         throw new ApiError(404, "The Post you search does not exist!")
     }
 
-    return res.status(201).json(new apiResponse(201, "The post you asked for is here!!!", particularPost))
+    await redis.set(cacheKey, JSON.stringify(particularPost), "EX", 3600)
+
+    return res.status(200).json(new apiResponse(200, particularPost, "The post you asked for is here!!!"))
 
 })
 
