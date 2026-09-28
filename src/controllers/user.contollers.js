@@ -4,8 +4,6 @@ import { apiResponse } from "../utils/ApiResponse.js"
 import { User } from "../models/user.models.js"
 import { Post } from "../models/post.models.js"
 
-
-
 // User Sign - Up
 const userSignUp = asyncHandler(async (req, res) => {
     const body = req.body ?? {}
