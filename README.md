@@ -1,6 +1,10 @@
-# Campus Blog API
+<p align="center">
+	<img src="public/campus-chronicle-banner.svg" alt="Campus Chronicle - stories from campus" width="100%" />
+</p>
 
-A backend for the VIT Chennai community to publish and discover campus stories. The project pairs a MongoDB document store with Redis for low-latency reads, and is structured to grow into a session-aware, event-driven service.
+# Campus Chronicle
+
+A community publishing platform for VIT Chennai, built to share the ideas, people, and stories shaping campus life. This repository contains the backend API, powered by MongoDB and Redis, with RabbitMQ planned for asynchronous messaging.
 
 ## Technology Stack
 
@@ -10,6 +14,7 @@ A backend for the VIT Chennai community to publish and discover campus stories. 
 | HTTP API | Express 5 |
 | Primary datastore | MongoDB with Mongoose 9 |
 | Cache and in-memory data store | Redis 7 with ioredis |
+| Message broker (planned) | RabbitMQ with `rabbitmq-client` |
 | Authentication building blocks | bcrypt, JSON Web Token (JWT), cookie-parser |
 | Media integration | Cloudinary, Multer |
 | Local development | Docker Compose, Nodemon |
@@ -22,11 +27,11 @@ flowchart LR
 		API --> Mongo[(MongoDB)]
 		API --> Cache[(Redis cache)]
 		API -. planned session validation .-> Sessions[(Redis sessions)]
-		API -. planned domain events .-> Messaging[Redis Pub/Sub or Streams]
+		API -. planned domain events .-> Messaging[RabbitMQ]
 		API -. media integration .-> Cloudinary[Cloudinary]
 ```
 
-MongoDB is the source of truth for users and posts. Redis accelerates frequently requested blog data; authentication-session storage and messaging are documented as extension points and are not wired into the current API yet.
+MongoDB is the source of truth for users and posts. Redis accelerates frequently requested blog data and is intended for authentication-session storage. RabbitMQ is the planned message broker. Session management and messaging are not wired into the current API yet.
 
 ## Redis: Cache, Sessions, Messaging
 
@@ -45,9 +50,11 @@ JWT and bcrypt dependencies are available, but login, refresh, logout, and Redis
 
 Passwords should be hashed with bcrypt and persisted in MongoDB. Redis should contain session metadata only, never passwords or password hashes. Checking Redis on authenticated requests enables immediate revocation, with the tradeoff that protected endpoints depend on Redis availability.
 
-### Pub/Sub and messaging direction
+## RabbitMQ: Messaging Roadmap
 
-Redis Pub/Sub can distribute lightweight events such as `post.created` to independent consumers for notifications, activity feeds, or cache coordination. Publishers and subscribers should use separate Redis connections. Pub/Sub is at-most-once: a disconnected subscriber misses messages. For events that must survive restarts or be processed later, use Redis Streams (or a durable broker such as RabbitMQ or Kafka) with consumer groups instead.
+RabbitMQ is planned for asynchronous application events such as `post.created`, allowing the API to hand off work to independent consumers for notifications, activity-feed updates, or media processing. Exchanges, routing keys, durable queues, publisher confirms, and acknowledgements can provide controlled routing and reliable processing. The `rabbitmq-client` dependency is installed, but broker connection setup, publishers, and consumers have not yet been implemented.
+
+Redis remains responsible for fast blog caching and is the planned store for login-session metadata; RabbitMQ will handle asynchronous message delivery. Keeping those responsibilities separate lets each service address a distinct workload.
 
 ## API Routes
 
@@ -114,8 +121,8 @@ src/
 
 Implemented: user registration, post creation and retrieval, MongoDB persistence, Redis-backed blog caching, and graceful Redis shutdown.
 
-Planned: password-based login, JWT cookie issuance and refresh, Redis session revocation, protected routes, and Redis Pub/Sub or Streams consumers. The presence of authentication libraries in the dependency list does not mean those flows are active yet.
+Planned: password-based login, JWT cookie issuance and refresh, Redis session revocation, protected routes, and RabbitMQ publishers and consumers. The presence of authentication or messaging libraries in the dependency list does not mean those flows are active yet.
 
 ## Roadmap
 
-The current focus is the backend API. A dedicated frontend with a complete UI/UX is coming next, followed by deployment so the application can be used beyond a local development environment.
+The API will remain runnable locally for development and testing. A dedicated frontend with a complete UI/UX is coming next, followed by a globally accessible deployment. The goal is to support both a local API for development and a hosted API for users anywhere.

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" role="img" aria-labelledby="title description">
+  <title id="title">Campus Chronicle</title>
+  <desc id="description">An editorial banner with a campus skyline and the tagline Stories from campus, told by us.</desc>
+  <rect width="1200" height="340" rx="18" fill="#153c36" />
+  <path d="M0 275h1200v65H0z" fill="#102f2b" />
+  <path d="M730 275V198h54v77m17 0v-51h48v51m17 0v-88h55v88m18 0v-44h44v44m18 0v-68h64v68m18 0v-34h54v34" fill="#24564d" />
+  <path d="M797 224h48v-18l-24-19-24 19zm82-18h55v-19l-27-22-28 22zm80 18h64v-16l-32-25-32 25z" fill="#f07859" />
+  <path d="M755 211h10v15h-10zm0 28h10v15h-10zm80-8h10v15h-10zm73-16h10v15h-10zm0 28h10v15h-10zm79 2h10v15h-10zm82-19h10v15h-10z" fill="#e6c982" />
+  <path d="M90 64h52" stroke="#f07859" stroke-width="5" stroke-linecap="round" />
+  <text x="90" y="110" fill="#e6c982" font-family="Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="3">VIT CHENNAI  /  COMMUNITY STORIES</text>
+  <text x="86" y="192" fill="#fbf7eb" font-family="Georgia, 'Times New Roman', serif" font-size="68" font-weight="700">Campus Chronicle</text>
+  <text x="91" y="234" fill="#c7dbd1" font-family="Arial, sans-serif" font-size="20">Stories from campus, told by us.</text>
+  <path d="M91 276h490" stroke="#47766b" stroke-width="1" />
+  <text x="91" y="306" fill="#9db9ad" font-family="Arial, sans-serif" font-size="12" letter-spacing="2">A HOME FOR IDEAS, VOICES &amp; CAMPUS LIFE</text>
+  <circle cx="1096" cy="78" r="4" fill="#e6c982" />
+  <path d="M1096 59v-12m0 62V97m19-19h12m-62 0h12m33-14 9-9m-44 44 9-9m0-26-9-9m44 44-9-9" stroke="#e6c982" stroke-width="2" stroke-linecap="round" />
+</svg>
