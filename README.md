@@ -115,3 +115,7 @@ src/
 Implemented: user registration, post creation and retrieval, MongoDB persistence, Redis-backed blog caching, and graceful Redis shutdown.
 
 Planned: password-based login, JWT cookie issuance and refresh, Redis session revocation, protected routes, and Redis Pub/Sub or Streams consumers. The presence of authentication libraries in the dependency list does not mean those flows are active yet.
+
+## Roadmap
+
+The current focus is the backend API. A dedicated frontend with a complete UI/UX is coming next, followed by deployment so the application can be used beyond a local development environment.
