@@ -19,6 +19,12 @@ const userSchema = new Schema({
     },
     about:{
         type: String,
+    },
+    password:{
+        type: String,
+        required: true,
+        trim: true,
+        lowercase: true,
     }
 },{timestamps: true})
 

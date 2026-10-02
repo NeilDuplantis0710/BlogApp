@@ -7,12 +7,13 @@ import { Post } from "../models/post.models.js"
 // User Sign - Up
 const userSignUp = asyncHandler(async (req, res) => {
     const body = req.body ?? {}
-    const { username, email, fullName, about } = body
+    const { username, email, fullName, about, password } = body
 
     console.log("User-Name: ", username)
     console.log("Email: ", email)
     console.log("Full-Name: ", fullName)
     console.log("About: ", about)
+    console.log("Password: ", password)
 
     if (!req.body || Object.keys(req.body).length === 0) {
         throw new ApiError(400, "Request body is required!!")
@@ -29,11 +30,12 @@ const userSignUp = asyncHandler(async (req, res) => {
     if (!about || about == "") {
         throw new ApiError(400, "About is required!!")
     }
-
+    if (!password || password == ""){
+        throw new ApiError(400, "Password is required!!")
+    }
     const alreadyExist = await User.findOne({
         $or: [{ username: username }, { email: email }]
     })
-
     if (alreadyExist) {
         throw new ApiError(409, "User already exist!!")
     }
@@ -41,7 +43,8 @@ const userSignUp = asyncHandler(async (req, res) => {
         username: username.toUpperCase().trim(),
         email: email.trim(),
         fullName: fullName.trim(),
-        about: about.toUpperCase()
+        about: about.toUpperCase(),
+        password: password.trim().toLowerCase()
     })
 
     const createdUser = await User.findById(user._id)
