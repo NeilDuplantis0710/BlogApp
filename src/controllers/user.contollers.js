@@ -39,12 +39,23 @@ const userSignUp = asyncHandler(async (req, res) => {
     if (alreadyExist) {
         throw new ApiError(409, "User already exist!!")
     }
+
+    const bcrypt = await import("bcrypt")
+    const saltRounds = 10
+    bcrypt.genSalt(saltRounds, (err, salt) => {
+        const hashedPassword = bcrypt.hash(password, salt, (err, hash) => {
+            if(err){
+                throw new ApiError(500, "Something went wrong while hashing the password!!")
+            }
+            password = hashedPassword
+        })
+    })
     const user = await User.create({
         username: username.toUpperCase().trim(),
         email: email.trim(),
         fullName: fullName.trim(),
         about: about.toUpperCase(),
-        password: password.trim().toLowerCase()
+        password: password.trim()
     })
 
     const createdUser = await User.findById(user._id)
