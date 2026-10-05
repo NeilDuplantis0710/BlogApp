@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { userSignUp, getAllUsers, writePost, getAllBlogs, getAblog } from "../controllers/user.contollers.js"
+import { userSignUp, getAllUsers, writePost, getAllBlogs, getAblog, loginUser } from "../controllers/user.contollers.js"
 
 const router = Router() //Creating a router object.
 
