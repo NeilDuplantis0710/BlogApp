@@ -10,11 +10,12 @@ import { Post } from "../models/post.models.js"
 const generateAccessAndRefreshTokens = async (userId) => {
     try {
         const user = await User.findById(userId)
-        const { token: accessToken , jti: accessJti }  = user.generateAccessToken()
+
+        const { token: accessToken, jti: accessJti } = user.generateAccessToken()
         const { token: refreshToken, jti: refreshJti } = user.generateRefreshToken()
 
-        await user.saveSessionToRedis('access', accessJti, process.env.ACCESS_TOKEN_EXPIRY)
-        await user.saveSessionToRedis('refresh', refreshJti, process.env.REFRESH_TOKEN_EXPIRY)
+        await user.savedSessionToRedis('access', accessJti, process.env.ACCESS_TOKEN_EXPIRY)
+        await user.savedSessionToRedis('refresh', refreshJti, process.env.REFRESH_TOKEN_EXPIRY)
 
         return { accessToken, refreshToken }
     } catch (error) {
@@ -196,11 +197,11 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const { email, password, username } = body
 
-    if (!email || !username) {
+    if (!email && !username) {
         throw new ApiError(400, "Username or Email is required!!!")
     }
 
-    const user = await User.findOne({ //finding user through username and email
+    const user = await User.findOne({
         $or: [{ username }, { email }]
     })
 
@@ -213,6 +214,39 @@ const loginUser = asyncHandler(async (req, res) => {
     if (!isPasswordCorrect) {
         throw new ApiError(401, "Password is incorrect!!!")
     }
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id)
+
+    const accessTokenExpiryInMs = Number(process.env.ACCESS_TOKEN_EXPIRY) * 24 * 60 * 60 * 1000
+    const refreshTokenExpiryInMs = Number(process.env.REFRESH_TOKEN_EXPIRY) * 24 * 60 * 60 * 1000
+
+    res.cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: accessTokenExpiryInMs
+    })
+
+    res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: refreshTokenExpiryInMs
+    })
+
+    return res.status(200).json(
+        new apiResponse(200, {
+            user: {
+                _id: user._id,
+                username: user.username,
+                email: user.email,
+                fullName: user.fullName,
+                about: user.about
+            },
+            accessToken,
+            refreshToken
+        }, "User logged in successfully!!")
+    )
 })
 
 export { userSignUp, getAllUsers, writePost, getAllBlogs, getAblog, loginUser }
