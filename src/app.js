@@ -23,7 +23,7 @@ app.use("/api/v1/signUp", signUp)
 app.use("/api/v1/users", getAllUsers) 
 app.use("/api/v1/create", writePost)
 app.use("/api/v1/blogs", getAllBlogs, getAblog)
-app.use("/api/v1/login", loginUser)
+app.use("/api/v1/loginUser", loginUser)
 
 
 //https://localhost:8000/api/v1/signup/register
