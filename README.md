@@ -26,12 +26,13 @@ flowchart LR
 		Client[Web or mobile client] --> API[Express API]
 		API --> Mongo[(MongoDB)]
 		API --> Cache[(Redis cache)]
-		API -. planned session validation .-> Sessions[(Redis sessions)]
+		API -->|login: write expiring token sessions| Sessions[(Redis sessions)]
+		API -. planned session validation .-> Sessions
 		API -. planned domain events .-> Messaging[RabbitMQ]
 		API -. media integration .-> Cloudinary[Cloudinary]
 ```
 
-MongoDB is the source of truth for users and posts. Redis accelerates frequently requested blog data and is intended for authentication-session storage. RabbitMQ is the planned message broker. Session management and messaging are not wired into the current API yet.
+MongoDB is the source of truth for users and posts. Redis accelerates frequently requested blog data and stores expiring access- and refresh-token session records created during login. Request-time session validation, refresh, logout/revocation, and RabbitMQ messaging are not implemented yet.
 
 ## Redis: Cache, Sessions, Messaging
 
@@ -44,11 +45,11 @@ The API uses a cache-aside pattern for blog reads:
 - Cached values expire after one hour.
 - Creating a post invalidates `blogs:all`, preventing the list endpoint from continuing to serve an old collection after a write.
 
-### Session management direction
+### Login sessions in progress
 
-JWT and bcrypt dependencies are available, but login, refresh, logout, and Redis-backed session validation have not yet been implemented. A planned design is to store a short-lived session record in Redis for each login, keyed by a unique session ID and expiring with the refresh-token lifetime. HttpOnly cookies can carry the access and refresh tokens; middleware can verify the access JWT and confirm its session remains active in Redis. Refresh-token rotation and deleting the Redis session on logout enable revocation before token expiry.
+`POST /api/v1/loginUser/login` checks the user's password, creates access and refresh JWTs with unique `jti` values, writes session metadata to Redis under `session:access:<jti>` and `session:refresh:<jti>`, and sets both tokens in HttpOnly cookies. Redis TTLs and cookie lifetimes are derived from the day-based expiry settings. The login response currently also includes the raw tokens in its JSON body; for production, prefer returning only safe user details and relying on the HttpOnly cookies.
 
-Passwords should be hashed with bcrypt and persisted in MongoDB. Redis should contain session metadata only, never passwords or password hashes. Checking Redis on authenticated requests enables immediate revocation, with the tradeoff that protected endpoints depend on Redis availability.
+Passwords are hashed with bcrypt and persisted in MongoDB. Redis session records contain user/session metadata, not passwords or password hashes. The records are created at login, but no middleware currently checks them on protected requests, and refresh-token rotation and logout revocation are still to be implemented.
 
 ## RabbitMQ: Messaging Roadmap
 
@@ -61,6 +62,7 @@ Redis remains responsible for fast blog caching and is the planned store for log
 | Method | Route | Purpose |
 | --- | --- | --- |
 | `POST` | `/api/v1/signUp/register` | Register a user |
+| `POST` | `/api/v1/loginUser/login` | Log in; issue access and refresh tokens |
 | `GET` | `/api/v1/users/getUsers` | List users |
 | `POST` | `/api/v1/create/writePost` | Create a blog post |
 | `GET` | `/api/v1/blogs/getPosts` | List blog posts |
@@ -80,6 +82,10 @@ Create a `.env` file in the project root:
 PORT=8000
 MONGODB_URI=mongodb://localhost:27017
 REDIS_URL=redis://localhost:6379
+ACCESS_TOKEN_SECRET=replace-with-a-long-random-secret
+REFRESH_TOKEN_SECRET=replace-with-a-different-long-random-secret
+ACCESS_TOKEN_EXPIRY=1d
+REFRESH_TOKEN_EXPIRY=10d
 
 # Optional: required only when using Cloudinary uploads
 CLOUDINARY_CLOUD_NAME=
@@ -119,9 +125,9 @@ src/
 
 ## Current Scope
 
-Implemented: user registration, post creation and retrieval, MongoDB persistence, Redis-backed blog caching, and graceful Redis shutdown.
+Implemented: user registration and password hashing, password-based login, access/refresh JWT issuance in cookies, expiring Redis session-record creation at login, post creation and retrieval, MongoDB persistence, Redis-backed blog caching, and graceful Redis shutdown.
 
-Planned: password-based login, JWT cookie issuance and refresh, Redis session revocation, protected routes, and RabbitMQ publishers and consumers. The presence of authentication or messaging libraries in the dependency list does not mean those flows are active yet.
+Planned: Redis-backed request/session validation, token refresh and rotation, logout/session revocation, protected routes, and RabbitMQ publishers and consumers. Login currently returns the tokens in both cookies and its JSON body; session records are stored but are not yet checked on subsequent requests.
 
 ## Roadmap
 
