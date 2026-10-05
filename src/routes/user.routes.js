@@ -8,5 +8,6 @@ router.route("/getUsers").get(getAllUsers)
 router.route("/writePost").post(writePost)
 router.route("/getPosts").get(getAllBlogs)
 router.route("/getBlog/:id").get(getAblog)
+router.route("/login").post(loginUser)
 
 export default router
