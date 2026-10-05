@@ -217,8 +217,8 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id)
 
-    const accessTokenExpiryInMs = Number(process.env.ACCESS_TOKEN_EXPIRY) * 24 * 60 * 60 * 1000
-    const refreshTokenExpiryInMs = Number(process.env.REFRESH_TOKEN_EXPIRY) * 24 * 60 * 60 * 1000
+    const accessTokenExpiryInMs = Number.parseInt(process.env.ACCESS_TOKEN_EXPIRY, 10) * 24 * 60 * 60 * 1000
+    const refreshTokenExpiryInMs = Number.parseInt(process.env.REFRESH_TOKEN_EXPIRY, 10) * 24 * 60 * 60 * 1000
 
     res.cookie("accessToken", accessToken, {
         httpOnly: true,

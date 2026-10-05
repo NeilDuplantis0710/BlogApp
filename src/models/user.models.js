@@ -33,10 +33,9 @@ const userSchema = new Schema({
     }
 }, { timestamps: true })
 
-userSchema.pre("save", async function (next) {
-    if (!this.isModified("password")) return next()
+userSchema.pre("save", async function () {
+    if (!this.isModified("password")) return
     this.password = await bcrypt.hash(this.password, 10)
-    next()
 })
 
 // Custom method to compare Password
@@ -49,7 +48,6 @@ userSchema.methods.isPasswordCorrect = async function (password) {
 // JWT Token Generation
 userSchema.methods.generateAccessToken = function () {
     const jti = crypto.randomUUID()
-    const accessExpiryInSeconds = Number(process.env.ACCESS_TOKEN_EXPIRY) * 24 * 60 * 60
 
     const token = jwt.sign({
         _id: this._id,
@@ -59,7 +57,7 @@ userSchema.methods.generateAccessToken = function () {
         jti,
         type: 'access'
     }, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: accessExpiryInSeconds
+        expiresIn: process.env.ACCESS_TOKEN_EXPIRY
     })
 
     return { token, jti }
@@ -67,14 +65,13 @@ userSchema.methods.generateAccessToken = function () {
 
 userSchema.methods.generateRefreshToken = function () {
     const jti = crypto.randomUUID()
-    const refreshExpiryInSeconds = Number(process.env.REFRESH_TOKEN_EXPIRY) * 24 * 60 * 60
 
     const token = jwt.sign({
         _id: this._id,
         jti,
         type: 'refresh'
     }, process.env.REFRESH_TOKEN_SECRET, {
-        expiresIn: refreshExpiryInSeconds
+        expiresIn: process.env.REFRESH_TOKEN_EXPIRY
     })
 
     return { token, jti }
@@ -82,7 +79,7 @@ userSchema.methods.generateRefreshToken = function () {
 
 userSchema.methods.savedSessionToRedis = async function (tokenType, jti, expiresInDays) {
     const redis = getRedisClient()
-    const ttlInSeconds = Number(expiresInDays) * 24 * 60 * 60
+    const ttlInSeconds = Number.parseInt(expiresInDays, 10) * 24 * 60 * 60
 
     const sessionData = {
         userId: this._id.toString(),
