@@ -41,21 +41,13 @@ const userSignUp = asyncHandler(async (req, res) => {
     }
 
     const bcrypt = await import("bcrypt")
-    const saltRounds = 10
-    bcrypt.genSalt(saltRounds, (err, salt) => {
-        const hashedPassword = bcrypt.hash(password, salt, (err, hash) => {
-            if(err){
-                throw new ApiError(500, "Something went wrong while hashing the password!!")
-            }
-            password = hashedPassword
-        })
-    })
+    const hashedPassword = await bcrypt.hash(password, 10)
     const user = await User.create({
         username: username.toUpperCase().trim(),
         email: email.trim(),
         fullName: fullName.trim(),
         about: about.toUpperCase(),
-        password: password.trim()
+        password: hashedPassword
     })
 
     const createdUser = await User.findById(user._id)
