@@ -4,6 +4,24 @@ import { apiResponse } from "../utils/ApiResponse.js"
 import { User } from "../models/user.models.js"
 import { Post } from "../models/post.models.js"
 
+
+//Generating Access Token and Refresh Token
+
+const generateAccessAndRefreshTokens = async (userId) => {
+    try {
+        const user = await User.findById(userId)
+        const { token: accessToken , jti: accessJti }  = user.generateAccessToken()
+        const { token: refreshToken, jti: refreshJti } = user.generateRefreshToken()
+
+        await user.saveSessionToRedis('access', accessJti, process.env.ACCESS_TOKEN_EXPIRY)
+        await user.saveSessionToRedis('refresh', refreshJti, process.env.REFRESH_TOKEN_EXPIRY)
+
+        return { accessToken, refreshToken }
+    } catch (error) {
+        throw new ApiError(500, "Something went wrong while generating the access and refresh tokens!!")
+    }
+}
+
 // User Sign - Up
 const userSignUp = asyncHandler(async (req, res) => {
     const body = req.body ?? {}
@@ -30,7 +48,7 @@ const userSignUp = asyncHandler(async (req, res) => {
     if (!about || about == "") {
         throw new ApiError(400, "About is required!!")
     }
-    if (!password || password == ""){
+    if (!password || password == "") {
         throw new ApiError(400, "Password is required!!")
     }
     const alreadyExist = await User.findOne({
@@ -173,10 +191,28 @@ const getAblog = asyncHandler(async (req, res) => {
 
 //Login
 
-const Login = asyncHandler(async (req, res) => {
-    const body  = req.body ?? {}
+const loginUser = asyncHandler(async (req, res) => {
+    const body = req.body ?? {}
 
-    const {email, password} = body
+    const { email, password, username } = body
+
+    if (!email || !username) {
+        throw new ApiError(400, "Username or Email is required!!!")
+    }
+
+    const user = await User.findOne({ //finding user through username and email
+        $or: [{ username }, { email }]
+    })
+
+    if (!user) {
+        throw new ApiError(404, "User does not exist!!!")
+    }
+
+    const isPasswordCorrect = await user.isPasswordCorrect(password)
+
+    if (!isPasswordCorrect) {
+        throw new ApiError(401, "Password is incorrect!!!")
+    }
 })
 
-export { userSignUp, getAllUsers, writePost, getAllBlogs, getAblog }
+export { userSignUp, getAllUsers, writePost, getAllBlogs, getAblog, loginUser }
