@@ -1,11 +1,13 @@
 import mongoose, { Schema } from 'mongoose'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
+import { getRedisClient } from '../redis/index.js'
 
 const userSchema = new Schema({
     username: {
         type: String,
-        requred: true,
+        required: true,
         unique: true,
         trim: true,
         lowercase: true,
@@ -24,9 +26,7 @@ const userSchema = new Schema({
     },
     password: {
         type: String,
-        required: true,
-        trim: true,
-        lowercase: true,
+        required: true
     }
 }, { timestamps: true })
 
@@ -44,26 +44,57 @@ userSchema.methods.isPasswordCorrect = async function (password) {
 
 
 // JWT Token Generation
-userSchema.methods.generateAccessToken = async function () {
-    return jwt.sign({
+userSchema.methods.generateAccessToken = function () {
+    const jti = crypto.randomUUID()
+
+    const token = jwt.sign({
         _id: this._id,
         email: this.email,
         username: this.username,
-        fullName: this.fullName
-    }),
-        process.env.ACCESS_TOKEN_SECRET,
-    {
+        fullName: this.fullName,
+        jti,
+        type: 'access'
+    }, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: process.env.ACCESS_TOKEN_EXPIRY
-    }
+    })
+
+    return { token, jti }
 }
-userSchema.methods.generateRefreshToken = async function () {
-    return jwt.sign({
+
+userSchema.methods.generateRefreshToken = function () {
+    const jti = crypto.randomUUID()
+
+    const token = jwt.sign({
         _id: this._id,
-    }),
-        process.env.REFRESH_TOKEN_SECRET,
-    {
+        jti,
+        type: 'refresh'
+    }, process.env.REFRESH_TOKEN_SECRET, {
         expiresIn: process.env.REFRESH_TOKEN_EXPIRY
+    })
+
+    return { token, jti }
+}
+
+
+const savedSessionToRedis = async (user, tokenType, jti, expiresIn) => {
+    const redis = getRedisClient()
+
+    const sessionData = {
+        userId: user._id.toString(),
+        username: user.username,
+        email: user.email,
+        fullName: user.fullName,
+        tokenType,
+        jti,
+        issuedAt: Date.now(),
     }
+
+    await redis.set(
+        `session:${tokenType}:${jti}`,
+        JSON.stringify(sessionData),
+        'EX',
+        expiresIn
+    )
 }
 
 export const User = mongoose.model("User", userSchema)
