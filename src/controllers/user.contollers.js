@@ -48,7 +48,7 @@ const userSignUp = asyncHandler(async (req, res) => {
         password: password.trim()
     })
 
-    const createdUser = await User.findById(user._id)
+    const createdUser = await User.findById(user._id).select("-password -refreshToken -accessToken")
 
     if (!createdUser) {
         throw new ApiError(500, "Something went wrong while creating the user!!")
