@@ -40,14 +40,12 @@ const userSignUp = asyncHandler(async (req, res) => {
         throw new ApiError(409, "User already exist!!")
     }
 
-    const bcrypt = await import("bcrypt")
-    const hashedPassword = await bcrypt.hash(password, 10)
     const user = await User.create({
         username: username.toUpperCase().trim(),
         email: email.trim(),
         fullName: fullName.trim(),
         about: about.toUpperCase(),
-        password: hashedPassword
+        password: password.trim()
     })
 
     const createdUser = await User.findById(user._id)
@@ -171,6 +169,14 @@ const getAblog = asyncHandler(async (req, res) => {
 
     return res.status(200).json(new apiResponse(200, particularPost, "The post you asked for is here!!!"))
 
+})
+
+//Login
+
+const Login = asyncHandler(async (req, res) => {
+    const body  = req.body ?? {}
+
+    const {email, password} = body
 })
 
 export { userSignUp, getAllUsers, writePost, getAllBlogs, getAblog }
