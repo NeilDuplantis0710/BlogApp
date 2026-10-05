@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose'
 import jwt from 'jsonwebtoken'
-import bcrypt from 'bcryptjs'
+import bcrypt from 'bcrypt'
 import crypto from 'crypto'
 import { getRedisClient } from '../redis/index.js'
 
