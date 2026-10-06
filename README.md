@@ -49,7 +49,7 @@ The API uses a cache-aside pattern for blog reads:
 
 `POST /api/v1/loginUser/login` checks the user's password, creates access and refresh JWTs with unique `jti` values, writes session records to Redis under `session:access:<jti>` and `session:refresh:<jti>`, and sets both tokens in HttpOnly cookies. Each Redis record currently contains the user ID, username, email, full name, token type, `jti`, and issue time. Redis TTLs and cookie lifetimes are derived from the day-based expiry settings.
 
-`verifyJWT` verifies access-token signatures and expiry, checks that the token is an access token, and requires its matching Redis session record to exist and match the token and user. The middleware attaches the verified access-token `jti` and user to the request for downstream handlers. `POST /api/v1/logout` uses that `jti` to delete the access session; it also verifies the refresh-token cookie and deletes its session when it is valid and belongs to the same user, then clears both cookies.
+`verifyJWT` verifies access-token signatures and expiry, checks that the token is an access token, and requires its matching Redis session record to exist and match the token and user. The middleware attaches the verified access-token `jti` and user to the request for downstream handlers. `POST /api/v1/logout` and `POST /api/v1/users/logout` use that `jti` to delete the access session; they also verify the refresh-token cookie and delete its session when it is valid and belongs to the same user, then clear both cookies.
 
 Passwords are hashed with bcrypt and persisted in MongoDB. JWT strings are not stored in Redis or MongoDB; Redis stores session records. The login response currently also includes the raw tokens in its JSON body as well as cookies. For production, prefer returning only safe user details and relying on HttpOnly cookies. Refresh-token renewal has not been implemented, and the other API routes are not currently protected by `verifyJWT`.
 
@@ -66,6 +66,7 @@ Redis remains responsible for fast blog caching and is the planned store for log
 | `POST` | `/api/v1/signUp/register` | Register a user |
 | `POST` | `/api/v1/loginUser/login` | Log in; issue access and refresh tokens |
 | `POST` | `/api/v1/logout` | Verify the access session, revoke its Redis records, and clear auth cookies |
+| `POST` | `/api/v1/users/logout` | Same authenticated logout handler, mounted through the user router |
 | `GET` | `/api/v1/users/getUsers` | List users |
 | `POST` | `/api/v1/create/writePost` | Create a blog post |
 | `GET` | `/api/v1/blogs/getPosts` | List blog posts |
