@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js"
 import { apiResponse } from "../utils/ApiResponse.js"
 import { User } from "../models/user.models.js"
 import { Post } from "../models/post.models.js"
+import jwt from "jsonwebtoken"
 
 
 //Generating Access Token and Refresh Token
@@ -249,4 +250,49 @@ const loginUser = asyncHandler(async (req, res) => {
     )
 })
 
-export { userSignUp, getAllUsers, writePost, getAllBlogs, getAblog, loginUser }
+// User logout
+
+// verifyJWT runs before this controller and adds the verified access-token jti
+// and user to req. Logout uses the jti to revoke the access session, verifies
+// the refresh token to revoke its session, then clears both cookies.
+const logoutUser = asyncHandler(async (req, res) => {
+    const redis = req.app.locals.redis
+    const sessionKeys = [`session:access:${req.accessTokenJti}`]
+    const refreshToken = req.cookies?.refreshToken
+
+    if (refreshToken) {
+        try {
+            const decodedRefreshToken = jwt.verify(
+                refreshToken,
+                process.env.REFRESH_TOKEN_SECRET
+            )
+
+            if (
+                decodedRefreshToken.type === "refresh" &&
+                decodedRefreshToken.jti &&
+                decodedRefreshToken._id === req.user._id.toString()
+            ) {
+                sessionKeys.push(`session:refresh:${decodedRefreshToken.jti}`)
+            }
+        } catch (error) {
+            if (!(error instanceof jwt.JsonWebTokenError)) {
+                throw error
+            }
+        }
+    }
+
+    await redis.del(...sessionKeys)
+
+    const cookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict"
+    }
+
+    res.clearCookie("accessToken", cookieOptions)
+    res.clearCookie("refreshToken", cookieOptions)
+
+    return res.status(200).json(new apiResponse(200, {}, "User logged out successfully!!"))
+})
+
+export { userSignUp, getAllUsers, writePost, getAllBlogs, getAblog, loginUser, logoutUser }
