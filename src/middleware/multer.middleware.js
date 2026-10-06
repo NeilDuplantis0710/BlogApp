@@ -1,2 +1,17 @@
-// Compatibility shim: re-export upload from project-level middleware
-export { upload } from '../../middleware/multer.middleware.js'
+import multer from 'multer'
+import path from 'path'
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const uploadDir = path.join(process.cwd(), 'public', 'temp')
+        cb(null, uploadDir)
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        cb(null, file.originalname)
+    }
+})
+
+export const upload = multer({
+    storage
+})
