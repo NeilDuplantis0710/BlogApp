@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js"
 import { apiResponse } from "../utils/ApiResponse.js"
 import { User } from "../models/user.models.js"
 import { Post } from "../models/post.models.js"
+import { Comment } from "../models/comment.models.js"
 import jwt from "jsonwebtoken"
 
 
@@ -313,43 +314,79 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 
     try {
-    const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
+        const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
 
-    // Since now we have the decodedToken, this means that we have the access to the raw refresh token. Now in the user.models.js, because we have access to the raw refresh token, we also have the access to the payload used in jwt.sign and we can see that we have used ._id for jwt.sign.
-    // Thus, we now also have the access to all the payload required by jwt.sign, this means that since we have access to the ._id, through which we can do a db lookup and get more info about the user.
+        // Since now we have the decodedToken, this means that we have the access to the raw refresh token. Now in the user.models.js, because we have access to the raw refresh token, we also have the access to the payload used in jwt.sign and we can see that we have used ._id for jwt.sign.
+        // Thus, we now also have the access to all the payload required by jwt.sign, this means that since we have access to the ._id, through which we can do a db lookup and get more info about the user.
 
-    const user = await User.findById(decodedToken?._id)
+        const user = await User.findById(decodedToken?._id)
 
-    if (!user) {
-        throw new ApiError(401, "Invalid refresh token!!!")
-    }
+        if (!user) {
+            throw new ApiError(401, "Invalid refresh token!!!")
+        }
 
-    if (incomingRefreshToken !== user.refreshToken) {
-        throw new ApiError(401, "Invalid or Expired Refresh Token!!!!")
-    }
+        if (incomingRefreshToken !== user.refreshToken) {
+            throw new ApiError(401, "Invalid or Expired Refresh Token!!!!")
+        }
 
-    await user.savedSessionToRedis('access', accessJti, process.env.ACCESS_TOKEN_EXPIRY)
-    await user.savedSessionToRedis('refresh', refreshJti, process.env.REFRESH_TOKEN_EXPIRY)
+        await user.savedSessionToRedis('access', accessJti, process.env.ACCESS_TOKEN_EXPIRY)
+        await user.savedSessionToRedis('refresh', refreshJti, process.env.REFRESH_TOKEN_EXPIRY)
 
-    // Generating new access and refresh tokens
+        // Generating new access and refresh tokens
 
-    const options = {
-        httpOnly: true,
-        secure: true
-    }
+        const options = {
+            httpOnly: true,
+            secure: true
+        }
 
-    const {accessToken, newRefreshToken} = await generateAccessAndRefreshTokens(user._id)
+        const { accessToken, newRefreshToken } = await generateAccessAndRefreshTokens(user._id)
 
-    return res
-    .status(201)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", newRefreshToken, options)
-    .json(
-        new apiResponse(201, {accessToken, refreshToken: newRefreshToken}, "Access Token refreshed successfully!!!!!")
-    )
+        return res
+            .status(201)
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", newRefreshToken, options)
+            .json(
+                new apiResponse(201, { accessToken, refreshToken: newRefreshToken }, "Access Token refreshed successfully!!!!!")
+            )
     } catch (error) {
         throw new ApiError(401, error?.message || "Invalid refresh token!!!")
     }
+})
+
+const commentPost = asyncHandler(async (req, res) => {
+
+    const body = req.body ?? {}
+    const { post, commentAuthor, content } = body
+
+    console.log("Post: ", post)
+    console.log("Comment - Author: ", commentAuthor)
+    console.log("Comment: ", content)
+
+    if (!post || post == "") {
+        throw new ApiError(401, "Post not found!!!!!")
+    }
+
+    if (!commentAuthor || commentAuthor == "") {
+        throw new ApiError(401, "Comment - Author not found!!!!")
+    }
+
+    if (!content || content == "") {
+        throw new ApiError(401, "Comment not found!!!!")
+    }
+
+    const comment = await Comment.create({
+        post: post.toLowerCase(),
+        commentAuthor: commentAuthor.trim().toLowerCase(),
+        content: content.trim()
+    })
+
+    const createdComment = await Comment.findById(comment._id)
+
+    if(!createdComment){
+        throw new ApiError(500, "Could not find comment!!!")
+    }
+
+    return res.status(201).json(new apiResponse(201, "Comment successfully created!!!!"))
 })
 
 export { userSignUp, getAllUsers, writePost, getAllBlogs, getAblog, loginUser, logoutUser, refreshAccessToken }
