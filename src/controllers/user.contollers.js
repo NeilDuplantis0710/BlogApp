@@ -18,6 +18,10 @@ const generateAccessAndRefreshTokens = async (userId) => {
         await user.savedSessionToRedis('access', accessJti, process.env.ACCESS_TOKEN_EXPIRY)
         await user.savedSessionToRedis('refresh', refreshJti, process.env.REFRESH_TOKEN_EXPIRY)
 
+        // Storing the raw refresh token inside the database.
+        user.refreshToken = refreshToken
+        await user.save({validateBeforeSave: false})
+
         return { accessToken, refreshToken }
     } catch (error) {
         throw new ApiError(500, "Something went wrong while generating the access and refresh tokens!!")
@@ -282,6 +286,12 @@ const logoutUser = asyncHandler(async (req, res) => {
     }
 
     await redis.del(...sessionKeys)
+    
+    // Deleting the refresh token from the database
+    await User.updateOne(
+        {_id: req.user._id},
+        { $unset: {refreshToken: 1} }
+    )
 
     const cookieOptions = {
         httpOnly: true,
@@ -294,5 +304,26 @@ const logoutUser = asyncHandler(async (req, res) => {
 
     return res.status(200).json(new apiResponse(200, {}, "User logged out successfully!!"))
 })
+
+const refreshAccessToken = asyncHandler(async (req, res) => {
+    const incomingRefreshToken = await req.cookies.refreshToken || req.body.refreshToken
+
+    if(!incomingRefreshToken){
+        throw new ApiError(401, "Refresh Token not found!!!!")
+    }
+
+    const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
+
+    // Since now we have the decodedToken, this means that we have the access to the raw refresh token. Now in the user.models.js, because we have access to the raw refresh token, we also have the access to the payload used in jwt.sign and we can see that we have used ._id for jwt.sign.
+    // Thus, we now also have the access to all the payload required by jwt.sign, this means that since we have access to the ._id, through which we can do a db lookup and get more info about the user.
+    
+    const user = await User.findById(decodedToken?._id)
+
+    if(!user){
+        throw new ApiError(401, "Invalid refresh token!!!")
+    }
+
+    if(incomingRefreshToken !== user.refreshToken){}
+}) 
 
 export { userSignUp, getAllUsers, writePost, getAllBlogs, getAblog, loginUser, logoutUser }
