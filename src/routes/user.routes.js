@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { userSignUp, getAllUsers, writePost, getAllBlogs, getAblog, loginUser, logoutUser } from "../controllers/user.contollers.js"
+import { userSignUp, getAllUsers, writePost, getAllBlogs, getAblog, loginUser, logoutUser, refreshAccessToken } from "../controllers/user.contollers.js"
 import { verifyJWT } from "../middleware/auth.middleware.js"
 
 const router = Router() //Creating a router object.
@@ -15,5 +15,6 @@ router.route("/login").post(loginUser)
 // secured route
 
 router.route("/logOut").post(verifyJWT, logoutUser)
+router.route("/refresh-token").post(refreshAccessToken)
 
 export default router
