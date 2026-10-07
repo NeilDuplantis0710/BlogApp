@@ -15,7 +15,7 @@ const commentSchema = new Schema({
         type: String,
         trim: true,
         required: true,
-        maxLength: 1000 //Maximum length of the comment can be a 1000 letters.
+        maxLength: 1000 //Maximum length of the comment can be upto a 1000 letters.
     }
 }, {timestamps: true})
 
