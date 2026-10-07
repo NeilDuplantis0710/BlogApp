@@ -131,7 +131,7 @@ src/
 
 Implemented: user registration and password hashing, password-based login, access/refresh JWT issuance in cookies, expiring Redis session-record creation at login, Redis validation of access-token sessions, logout revocation of the current access session and a valid matching refresh session, cookie clearing, post creation and retrieval, MongoDB persistence, Redis-backed blog caching, and graceful Redis shutdown.
 
-Planned: refresh-token renewal and rotation, applying `verifyJWT` to additional protected routes, and RabbitMQ publishers and consumers. Login currently returns the tokens in both cookies and its JSON body.
+Planned: applying `verifyJWT` to additional protected routes and implementing RabbitMQ publishers and consumers. Login currently returns the tokens in both cookies and its JSON body.
 
 ## Roadmap
 
