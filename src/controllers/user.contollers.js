@@ -20,7 +20,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
 
         // Storing the raw refresh token inside the database.
         user.refreshToken = refreshToken
-        await user.save({validateBeforeSave: false})
+        await user.save({ validateBeforeSave: false })
 
         return { accessToken, refreshToken }
     } catch (error) {
@@ -286,11 +286,11 @@ const logoutUser = asyncHandler(async (req, res) => {
     }
 
     await redis.del(...sessionKeys)
-    
+
     // Deleting the refresh token from the database
     await User.updateOne(
-        {_id: req.user._id},
-        { $unset: {refreshToken: 1} }
+        { _id: req.user._id },
+        { $unset: { refreshToken: 1 } }
     )
 
     const cookieOptions = {
@@ -308,22 +308,48 @@ const logoutUser = asyncHandler(async (req, res) => {
 const refreshAccessToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken = await req.cookies.refreshToken || req.body.refreshToken
 
-    if(!incomingRefreshToken){
+    if (!incomingRefreshToken) {
         throw new ApiError(401, "Refresh Token not found!!!!")
     }
 
+    try {
     const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
 
     // Since now we have the decodedToken, this means that we have the access to the raw refresh token. Now in the user.models.js, because we have access to the raw refresh token, we also have the access to the payload used in jwt.sign and we can see that we have used ._id for jwt.sign.
     // Thus, we now also have the access to all the payload required by jwt.sign, this means that since we have access to the ._id, through which we can do a db lookup and get more info about the user.
-    
+
     const user = await User.findById(decodedToken?._id)
 
-    if(!user){
+    if (!user) {
         throw new ApiError(401, "Invalid refresh token!!!")
     }
 
-    if(incomingRefreshToken !== user.refreshToken){}
-}) 
+    if (incomingRefreshToken !== user.refreshToken) {
+        throw new ApiError(401, "Invalid or Expired Refresh Token!!!!")
+    }
 
-export { userSignUp, getAllUsers, writePost, getAllBlogs, getAblog, loginUser, logoutUser }
+    await user.savedSessionToRedis('access', accessJti, process.env.ACCESS_TOKEN_EXPIRY)
+    await user.savedSessionToRedis('refresh', refreshJti, process.env.REFRESH_TOKEN_EXPIRY)
+
+    // Generating new access and refresh tokens
+
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    const {accessToken, newRefreshToken} = await generateAccessAndRefreshTokens(user._id)
+
+    return res
+    .status(201)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", newRefreshToken, options)
+    .json(
+        new apiResponse(201, {accessToken, refreshToken: newRefreshToken}, "Access Token refreshed successfully!!!!!")
+    )
+    } catch (error) {
+        throw new ApiError(401, error?.message || "Invalid refresh token!!!")
+    }
+})
+
+export { userSignUp, getAllUsers, writePost, getAllBlogs, getAblog, loginUser, logoutUser, refreshAccessToken }
