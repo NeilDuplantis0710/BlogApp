@@ -376,11 +376,16 @@ const commentPost = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Comment content is required")
     }
 
+    const redis = req.app.locals.redis
+
     const comment = await Comment.create({
         post: post._id,
         commentAuthor: user._id,
         content: content.trim()
     })
+
+    await redis.del(`comments:post:${postId}`) // deletes the comment cache, blog:<postId> → cached single post
+    await redis.del(`blog:${postId}`) // deletes the post cache, comments:post:<postId> → cached comments for that post
 
     const createdComment = await Comment.findById(comment._id)
 
