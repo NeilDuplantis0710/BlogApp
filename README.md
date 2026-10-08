@@ -36,14 +36,15 @@ MongoDB is the source of truth for users and posts. Redis accelerates frequently
 
 ## Redis: Cache, Sessions, Messaging
 
-### Blog caching in place
+### Blog and comment caching in place
 
-The API uses a cache-aside pattern for blog reads:
+The API uses a cache-aside pattern for read-heavy endpoints:
 
 - `GET /api/v1/blogs/getPosts` reads `blogs:all` from Redis first, then MongoDB on a cache miss.
 - `GET /api/v1/blogs/getBlog/:id` uses a per-post key (`blog:<id>`) so one post cannot be returned for another post's ID.
+- `GET /api/v1/comment/getComments/:postId` reads `comments:post:<postId>` from Redis first, then queries MongoDB and populates each commentAuthor with the author username before caching the result.
 - Cached values expire after one hour.
-- Creating a post invalidates `blogs:all`, preventing the list endpoint from continuing to serve an old collection after a write.
+- Creating a post invalidates `blogs:all`, and creating a comment invalidates both `comments:post:<postId>` and `blog:<postId>` to prevent stale list and detail responses.
 
 ### Login sessions and access-token revocation
 
@@ -66,10 +67,11 @@ Redis remains responsible for fast blog caching and is the planned store for log
 | `POST` | `/api/v1/signUp/register` | Register a user |
 | `POST` | `/api/v1/loginUser/login` | Log in; issue access and refresh tokens |
 | `POST` | `/api/v1/logout/logOut` | Verify the access session, revoke its Redis records, and clear auth cookies |
-| `POST` | `/api/v1/users/logOut` | Same authenticated logout handler, mounted through the user router |
+| `POST` | `/api/v1/tokenRefresh/refresh-token` | Refresh the access token |
 | `GET` | `/api/v1/users/getUsers` | List users |
 | `POST` | `/api/v1/create/writePost` | Create a blog post |
 | `POST` | `/api/v1/comment/writeComment/:postId/:userId` | Create a comment on a post by a user |
+| `GET` | `/api/v1/comment/getComments/:postId` | Fetch all comments for a specific post |
 | `GET` | `/api/v1/blogs/getPosts` | List blog posts |
 | `GET` | `/api/v1/blogs/getBlog/:id` | Fetch a post by MongoDB ID |
 
@@ -130,7 +132,7 @@ src/
 
 ## Current Scope
 
-Implemented: user registration and password hashing, password-based login, access/refresh JWT issuance in cookies, expiring Redis session-record creation at login, Redis validation of access-token sessions, logout revocation of the current access session and a valid matching refresh session, cookie clearing, post creation and retrieval, comment creation linked to a post and user, MongoDB persistence, Redis-backed blog caching, and graceful Redis shutdown.
+Implemented: user registration and password hashing, password-based login, access/refresh JWT issuance in cookies, expiring Redis session-record creation at login, Redis validation of access-token sessions, logout revocation of the current access session and a valid matching refresh session, cookie clearing, post creation and retrieval, comment creation linked to a post and user, comment retrieval cached by post ID, MongoDB persistence, Redis-backed blog and comment caching, and graceful Redis shutdown.
 
 Planned: applying `verifyJWT` to additional protected routes and implementing RabbitMQ publishers and consumers. Login currently returns the tokens in both cookies and its JSON body.
 
