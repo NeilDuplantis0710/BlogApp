@@ -10,7 +10,7 @@ router.route("/writePost").post(writePost)
 router.route("/getPosts").get(getAllBlogs)
 router.route("/getBlog/:id").get(getAblog)
 router.route("/login").post(loginUser)
-router.route("/writeComment/:postId/:userId").post(commentPost)
+router.route("/writeComment/:postId").post(verifyJWT, commentPost)
 router.route("/getComments/:postId").get(getCommentbyPost)
 
 
