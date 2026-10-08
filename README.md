@@ -69,6 +69,7 @@ Redis remains responsible for fast blog caching and is the planned store for log
 | `POST` | `/api/v1/users/logOut` | Same authenticated logout handler, mounted through the user router |
 | `GET` | `/api/v1/users/getUsers` | List users |
 | `POST` | `/api/v1/create/writePost` | Create a blog post |
+| `POST` | `/api/v1/comment/writeComment/:postId/:userId` | Create a comment on a post by a user |
 | `GET` | `/api/v1/blogs/getPosts` | List blog posts |
 | `GET` | `/api/v1/blogs/getBlog/:id` | Fetch a post by MongoDB ID |
 
@@ -129,7 +130,7 @@ src/
 
 ## Current Scope
 
-Implemented: user registration and password hashing, password-based login, access/refresh JWT issuance in cookies, expiring Redis session-record creation at login, Redis validation of access-token sessions, logout revocation of the current access session and a valid matching refresh session, cookie clearing, post creation and retrieval, MongoDB persistence, Redis-backed blog caching, and graceful Redis shutdown.
+Implemented: user registration and password hashing, password-based login, access/refresh JWT issuance in cookies, expiring Redis session-record creation at login, Redis validation of access-token sessions, logout revocation of the current access session and a valid matching refresh session, cookie clearing, post creation and retrieval, comment creation linked to a post and user, MongoDB persistence, Redis-backed blog caching, and graceful Redis shutdown.
 
 Planned: applying `verifyJWT` to additional protected routes and implementing RabbitMQ publishers and consumers. Login currently returns the tokens in both cookies and its JSON body.
 
