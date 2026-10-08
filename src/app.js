@@ -19,6 +19,7 @@ import getAblog  from './routes/user.routes.js'
 import loginUser from './routes/user.routes.js'
 import logoutRouter from './routes/user.routes.js'
 import refreshAccessToken  from './routes/user.routes.js'
+import  commentPost  from './routes/user.routes.js'
 
 //routes declaration
 app.use("/api/v1/signUp", signUp)
@@ -28,6 +29,7 @@ app.use("/api/v1/blogs", getAllBlogs, getAblog)
 app.use("/api/v1/loginUser", loginUser)
 app.use("/api/v1/logout", logoutRouter)
 app.use("/api/v1/tokenRefresh", refreshAccessToken)
+app.use("/api/v1/comment", commentPost)
 
 
 //https://localhost:8000/api/v1/signup/register
