@@ -70,7 +70,7 @@ Redis remains responsible for fast blog caching and is the planned store for log
 | `POST` | `/api/v1/tokenRefresh/refresh-token` | Refresh the access token |
 | `GET` | `/api/v1/users/getUsers` | List users |
 | `POST` | `/api/v1/create/writePost` | Create a blog post |
-| `POST` | `/api/v1/comment/writeComment/:postId/:userId` | Create a comment on a post by a user |
+| `POST` | `/api/v1/comment/writeComment/:postId` | Create a comment as the authenticated user |
 | `GET` | `/api/v1/comment/getComments/:postId` | Fetch all comments for a specific post |
 | `GET` | `/api/v1/blogs/getPosts` | List blog posts |
 | `GET` | `/api/v1/blogs/getBlog/:id` | Fetch a post by MongoDB ID |
