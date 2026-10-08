@@ -384,16 +384,49 @@ const commentPost = asyncHandler(async (req, res) => {
         content: content.trim()
     })
 
-    await redis.del(`comments:post:${postId}`) // deletes the comment cache, blog:<postId> → cached single post
-    await redis.del(`blog:${postId}`) // deletes the post cache, comments:post:<postId> → cached comments for that post
+    // Invalidate both the comments list cache for this post and the post-level cache.
+    // A new comment changes the visible state of the post, so stale comment lists and
+    // post data must be removed before the next request can refresh them from MongoDB.
+    await redis.del(`comments:post:${postId}`, `blog:${postId}`)
 
     const createdComment = await Comment.findById(comment._id)
 
-    if(!createdComment){
+    if (!createdComment) {
         throw new ApiError(500, "Could not find comment!!!")
     }
 
     return res.status(201).json(new apiResponse(201, createdComment, "Comment successfully created"))
 })
 
-export { userSignUp, getAllUsers, writePost, getAllBlogs, getAblog, loginUser, logoutUser, refreshAccessToken, commentPost }
+const getCommentbyPost = asyncHandler(async (req, res) => {
+
+    const { postId } = req.params
+    const redis = req.app.locals.redis
+    const cacheKey = `comments:post:${postId}`
+
+    // Cache-aside pattern for comments:
+    // 1) Use a Redis key unique to the post so each post keeps its own comment list.
+    // 2) Check Redis first; if a cached list exists, return it immediately for a faster read.
+    // 3) If it is missing, fetch the comments from MongoDB using the post reference field.
+    // 4) Populate the commentAuthor ObjectId with just the username so the client can show
+    //    who wrote each comment without loading the full user document.
+    // 5) Sort newest comments first and save the result back into Redis with a TTL.
+    const cachedComments = await redis.get(cacheKey)
+    if (cachedComments) {
+        return res.status(200).json(
+            new apiResponse(200, JSON.parse(cachedComments), "Comments fetched from cache")
+        )
+    }
+
+    const comments = await Comment.find({ post: postId })
+        .populate("commentAuthor", "username")
+        .sort({ createdAt: -1 })
+
+    await redis.set(cacheKey, JSON.stringify(comments), "EX", 3600)
+
+    return res.status(200).json(
+        new apiResponse(200, comments, "Comments fetched from DB")
+    )
+})
+
+export { userSignUp, getAllUsers, writePost, getAllBlogs, getAblog, loginUser, logoutUser, refreshAccessToken, commentPost, getCommentbyPost }
