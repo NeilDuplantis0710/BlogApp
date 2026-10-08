@@ -356,27 +356,29 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 const commentPost = asyncHandler(async (req, res) => {
 
     const body = req.body ?? {}
-    const { post, commentAuthor, content } = body
+    const { content } = body
 
-    console.log("Post: ", post)
-    console.log("Comment - Author: ", commentAuthor)
-    console.log("Comment: ", content)
+    const postId = req.params.postId
+    const post = await Post.findById(postId)
 
-    if (!post || post == "") {
-        throw new ApiError(401, "Post not found!!!!!")
+    if (!post) {
+        throw new ApiError(404, "Post not found")
     }
 
-    if (!commentAuthor || commentAuthor == "") {
-        throw new ApiError(401, "Comment - Author not found!!!!")
+    const userId = req.params.userId
+    const user = await User.findById(userId)
+
+    if (!user) {
+        throw new ApiError(404, "Comment author not found")
     }
 
-    if (!content || content == "") {
-        throw new ApiError(401, "Comment not found!!!!")
+    if (typeof content !== "string" || !content.trim()) {
+        throw new ApiError(400, "Comment content is required")
     }
 
     const comment = await Comment.create({
-        post: post.toLowerCase(),
-        commentAuthor: commentAuthor.trim().toLowerCase(),
+        post: post._id,
+        commentAuthor: user._id,
         content: content.trim()
     })
 
@@ -386,7 +388,7 @@ const commentPost = asyncHandler(async (req, res) => {
         throw new ApiError(500, "Could not find comment!!!")
     }
 
-    return res.status(201).json(new apiResponse(201, "Comment successfully created!!!!"))
+    return res.status(201).json(new apiResponse(201, createdComment, "Comment successfully created"))
 })
 
-export { userSignUp, getAllUsers, writePost, getAllBlogs, getAblog, loginUser, logoutUser, refreshAccessToken }
+export { userSignUp, getAllUsers, writePost, getAllBlogs, getAblog, loginUser, logoutUser, refreshAccessToken, commentPost }
