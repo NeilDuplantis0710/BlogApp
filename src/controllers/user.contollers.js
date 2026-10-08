@@ -365,13 +365,6 @@ const commentPost = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Post not found")
     }
 
-    const userId = req.params.userId
-    const user = await User.findById(userId)
-
-    if (!user) {
-        throw new ApiError(404, "Comment author not found")
-    }
-
     if (typeof content !== "string" || !content.trim()) {
         throw new ApiError(400, "Comment content is required")
     }
@@ -380,7 +373,7 @@ const commentPost = asyncHandler(async (req, res) => {
 
     const comment = await Comment.create({
         post: post._id,
-        commentAuthor: user._id,
+        commentAuthor: req.user._id,
         content: content.trim()
     })
 
