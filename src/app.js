@@ -19,7 +19,7 @@ import getAblog  from './routes/user.routes.js'
 import loginUser from './routes/user.routes.js'
 import logoutRouter from './routes/user.routes.js'
 import refreshAccessToken  from './routes/user.routes.js'
-import  commentPost  from './routes/user.routes.js'
+import commentPost from './routes/user.routes.js'
 
 //routes declaration
 app.use("/api/v1/signUp", signUp)
