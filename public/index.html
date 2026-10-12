@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Campus Chronicle — thoughtful stories from the VIT Chennai community."
+    />
+    <title>Campus Chronicle — stories from campus</title>
+    <link rel="stylesheet" href="/assets/css/style.css" />
+  </head>
+  <body>
+    <header class="site-nav">
+      <a class="brand" href="/" aria-label="Campus Chronicle home"
+        ><span class="brand-seal">CC</span><span>Campus Chronicle</span></a
+      >
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="/#stories">Stories</a
+        ><a href="/write/" data-member-only class="hidden">Write</a
+        ><a href="/signup/" data-guest-only>Join</a>
+      </nav>
+      <div class="nav-actions">
+        <span class="nav-user hidden" data-member-only data-user-name></span>
+        <a class="button-quiet" data-guest-only data-login-link href="/login/"
+          >Sign in</a
+        >
+        <a class="button" data-guest-only href="/signup/">Get started</a>
+        <a class="button small hidden" data-member-only href="/write/">Write</a>
+        <button
+          class="button-quiet hidden"
+          type="button"
+          data-member-only
+          data-logout
+        >
+          Sign out
+        </button>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <section class="hero" aria-labelledby="home-title">
+        <div>
+          <p class="eyebrow">VIT Chennai · Student voices</p>
+          <h1 id="home-title">A better place for campus ideas.</h1>
+          <p class="hero-copy">
+            Campus Chronicle is where questions become essays, experiences
+            become stories, and a campus becomes a community.
+          </p>
+          <a class="button" href="/signup/" data-guest-only>Start reading</a>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="art-book"></div>
+        </div>
+      </section>
+
+      <section class="topic-bar" aria-label="Filter stories by topic">
+        <span class="topic-label">Explore:</span>
+        <button class="topic active" type="button" data-topic="all">
+          All stories
+        </button>
+        <button class="topic" type="button" data-topic="campus life">
+          Campus life
+        </button>
+        <button class="topic" type="button" data-topic="technology">
+          Technology
+        </button>
+        <button class="topic" type="button" data-topic="culture">
+          Culture
+        </button>
+        <button class="topic" type="button" data-topic="learning">
+          Learning
+        </button>
+      </section>
+
+      <div class="content-grid" id="stories">
+        <section aria-labelledby="latest-title">
+          <h2 class="section-title" id="latest-title">
+            Latest from the chronicle
+          </h2>
+          <p class="trending-byline" data-feed-feedback>
+            Loading community stories…
+          </p>
+          <div class="story-list" data-story-list>
+            <div class="load-state">Finding the latest stories…</div>
+          </div>
+        </section>
+        <aside class="sidebar" aria-label="Popular stories">
+          <div class="aside-panel">
+            <h2 class="aside-heading">Popular this week</h2>
+            <div data-trending>
+              <p class="trending-byline">Loading stories…</p>
+            </div>
+          </div>
+          <div class="side-note">
+            Stories and responses are delivered through the existing API. Its
+            Redis cache keeps repeat reads quick while the conversation stays
+            current.
+          </div>
+        </aside>
+      </div>
+      <footer class="footer">
+        <span>© 2026 Campus Chronicle</span
+        ><span class="footer-links"
+          ><a href="/signup/">Write with us</a
+          ><a href="/login/">Sign in</a></span
+        >
+      </footer>
+    </main>
+    <script src="/assets/js/app.js"></script>
+  </body>
+</html>

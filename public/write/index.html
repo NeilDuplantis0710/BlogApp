@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Publish a story to Campus Chronicle." />
+    <title>Write a story — Campus Chronicle</title>
+    <link rel="stylesheet" href="/assets/css/style.css" />
+  </head>
+  <body>
+    <header class="site-nav">
+      <a class="brand" href="/"
+        ><span class="brand-seal">CC</span><span>Campus Chronicle</span></a
+      >
+      <div class="nav-actions">
+        <span class="nav-user" data-user-name></span
+        ><button class="button-quiet" type="button" data-logout>
+          Sign out
+        </button>
+      </div>
+    </header>
+    <main class="editor-page">
+      <div class="editor-head">
+        <div>
+          <h1>Write your story</h1>
+          <p>
+            Share something that will make a classmate pause, learn, or feel
+            less alone.
+          </p>
+        </div>
+        <a class="button-outline" href="/">Discard</a>
+      </div>
+      <div class="author-lockup">
+        <span class="avatar" data-author-initials>CC</span
+        ><span
+          >Publishing as <strong data-author-name>your byline</strong></span
+        >
+      </div>
+      <form class="editor-form" data-write-form novalidate>
+        <div class="form-field">
+          <label class="hidden" for="postName">Title</label
+          ><input
+            class="editor-title"
+            id="postName"
+            name="postName"
+            maxlength="160"
+            placeholder="Title"
+            required
+          />
+        </div>
+        <div class="form-field">
+          <label class="hidden" for="postSubContent">Subtitle</label
+          ><textarea
+            class="editor-subtitle"
+            id="postSubContent"
+            name="postSubContent"
+            maxlength="280"
+            placeholder="Tell readers why this story matters (optional)"
+          ></textarea>
+        </div>
+        <div class="form-field">
+          <label for="postTag">Topic</label
+          ><input
+            id="postTag"
+            name="postTag"
+            maxlength="40"
+            placeholder="e.g. Campus life"
+            required
+          />
+          <p class="field-hint">
+            Use a short topic to help readers discover the story.
+          </p>
+        </div>
+        <div class="form-field">
+          <label class="hidden" for="postContent">Story</label
+          ><textarea
+            class="editor-body"
+            id="postContent"
+            name="postContent"
+            placeholder="Tell your story…"
+            required
+          ></textarea>
+        </div>
+        <div class="editor-actions">
+          <p class="form-status" data-form-status aria-live="polite"></p>
+          <button class="button" type="submit">Publish story</button>
+        </div>
+      </form>
+    </main>
+    <script src="/assets/js/app.js"></script>
+  </body>
+</html>

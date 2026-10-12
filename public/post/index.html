@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Read a story from Campus Chronicle." />
+    <title>Story — Campus Chronicle</title>
+    <link rel="stylesheet" href="/assets/css/style.css" />
+  </head>
+  <body>
+    <header class="site-nav">
+      <a class="brand" href="/"
+        ><span class="brand-seal">CC</span><span>Campus Chronicle</span></a
+      >
+      <nav class="nav-links">
+        <a href="/">Home</a
+        ><a href="/write/" data-member-only class="hidden">Write</a>
+      </nav>
+      <div class="nav-actions">
+        <span class="nav-user hidden" data-member-only data-user-name></span>
+        <a class="button-quiet" data-guest-only href="/login/">Sign in</a
+        ><a class="button small" data-guest-only href="/signup/">Join</a>
+        <button
+          class="button-quiet hidden"
+          type="button"
+          data-member-only
+          data-logout
+        >
+          Sign out
+        </button>
+      </div>
+    </header>
+    <main class="post-page">
+      <div data-post-content>
+        <div class="load-state">Opening the story…</div>
+      </div>
+      <section class="comment-section" data-comment-area>
+        <h2>Responses</h2>
+        <form class="comment-form" novalidate>
+          <div class="form-field">
+            <label class="hidden" for="comment-content">Your response</label
+            ><textarea
+              id="comment-content"
+              placeholder="What are your thoughts?"
+            ></textarea>
+          </div>
+          <div class="comment-form-footer">
+            <p class="form-status" data-form-status aria-live="polite"></p>
+            <button class="button small" type="submit">Publish</button>
+          </div>
+        </form>
+        <div class="comment-login hidden" data-comment-login>
+          Want to join the conversation?
+          <a href="/login/">Sign in to respond</a>.
+        </div>
+        <div class="comment-list" data-comment-list>
+          <p class="trending-byline">Loading responses…</p>
+        </div>
+      </section>
+    </main>
+    <script src="/assets/js/app.js"></script>
+  </body>
+</html>

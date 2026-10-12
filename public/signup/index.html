@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Join the Campus Chronicle community." />
+    <title>Join Campus Chronicle</title>
+    <link rel="stylesheet" href="/assets/css/style.css" />
+  </head>
+  <body>
+    <main class="auth-page">
+      <section class="auth-intro">
+        <a class="brand" href="/"
+          ><span class="brand-seal">CC</span><span>Campus Chronicle</span></a
+        >
+        <div>
+          <h1>Bring your point of view.</h1>
+          <p>
+            Join a home for careful thought, useful advice, and the stories that
+            make student life memorable.
+          </p>
+        </div>
+        <span class="auth-foot">One account. A whole campus of ideas.</span>
+      </section>
+      <section class="auth-main">
+        <div class="auth-card">
+          <p class="auth-kicker">Join the community</p>
+          <h2>Create your account</h2>
+          <p class="auth-subcopy">
+            Set up your byline, then start reading and responding.
+          </p>
+          <form data-signup-form novalidate>
+            <div class="form-field">
+              <label for="fullName">Full name</label
+              ><input
+                id="fullName"
+                name="fullName"
+                autocomplete="name"
+                placeholder="Your name"
+                required
+              />
+            </div>
+            <div class="form-field">
+              <label for="username">Username</label
+              ><input
+                id="username"
+                name="username"
+                autocomplete="username"
+                placeholder="e.g. campuswriter"
+                required
+              />
+              <p class="field-hint">This is shown with your responses.</p>
+            </div>
+            <div class="form-field">
+              <label for="email">Email</label
+              ><input
+                id="email"
+                name="email"
+                type="email"
+                autocomplete="email"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+            <div class="form-field">
+              <label for="about">A little about you</label
+              ><textarea
+                id="about"
+                name="about"
+                placeholder="What do you care about on campus?"
+                required
+              ></textarea>
+            </div>
+            <div class="form-field">
+              <label for="password">Password</label
+              ><input
+                id="password"
+                name="password"
+                type="password"
+                autocomplete="new-password"
+                placeholder="Create a password"
+                required
+              />
+            </div>
+            <button class="button form-submit" type="submit">
+              Create account
+            </button>
+            <p class="form-status" data-form-status aria-live="polite"></p>
+          </form>
+          <p class="auth-switch">
+            Already have an account? <a href="/login/">Sign in</a>
+          </p>
+        </div>
+      </section>
+    </main>
+    <script src="/assets/js/app.js"></script>
+  </body>
+</html>
